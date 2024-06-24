@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:food_app/models/meals.dart';
 import 'package:food_app/screens/categories_screen.dart';
 import 'package:food_app/screens/meals_screen.dart';
+import 'package:food_app/widgets/main_drawer.dart';
 
 class TabsScreen extends StatefulWidget {
   const TabsScreen({super.key});
@@ -16,13 +17,28 @@ class _TabsScreen extends State<TabsScreen> {
 
   final List<Meal> _favouriteMeals = [];
 
+  void _showInfoMessage(String message) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
+  }
+
   void _toggelMealFavouriteStatus(Meal meal) {
     final isExisting = _favouriteMeals.contains(meal);
 
     if (isExisting) {
-      _favouriteMeals.remove(meal);
+      setState(() {
+        _favouriteMeals.remove(meal);
+        _showInfoMessage('Meal removed from favourites.');
+      });
     } else {
-      _favouriteMeals.add(meal);
+      setState(() {
+        _favouriteMeals.add(meal);
+        _showInfoMessage('Meal added to Favourites.');
+      });
     }
   }
 
@@ -30,6 +46,13 @@ class _TabsScreen extends State<TabsScreen> {
     setState(() {
       _selectedPageIndex = index;
     });
+  }
+
+  void _setScreen(String identifier) {
+    if (identifier == 'filter') {
+    } else {
+      Navigator.pop(context);
+    }
   }
 
   @override
@@ -40,15 +63,18 @@ class _TabsScreen extends State<TabsScreen> {
     var activePageTitle = "Categories";
     if (_selectedPageIndex == 1) {
       activePage = MealsScreen(
-        meals: [],
+        meals: _favouriteMeals,
         onToggelFavourite: _toggelMealFavouriteStatus,
       );
-      activePageTitle = 'Your favourites';
+      activePageTitle = 'Your Favourites';
     }
 
     return Scaffold(
       appBar: AppBar(
         title: Text(activePageTitle),
+      ),
+      drawer: MainDrawer(
+        onSelectScreen: _setScreen,
       ),
       body: activePage,
       bottomNavigationBar: BottomNavigationBar(
